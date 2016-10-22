@@ -549,6 +549,7 @@ func postAPIStrokesRoomsID(ctx context.Context, w http.ResponseWriter, r *http.R
 		postedStroke.Blue,
 		postedStroke.Alpha,
 	)
+	time.Sleep(200 * time.Millisecond)
 	strokeID, err := result.LastInsertId()
 	if err != nil {
 		outputError(w, err)
@@ -635,5 +636,5 @@ func main() {
 	mux.HandleFuncC(pat.Post("/api/strokes/rooms/:id"), postAPIStrokesRoomsID)
 
 	log.Fatal(http.ListenAndServe("0.0.0.0:80", mux))
-//	log.Fatal(http.ListenAndServe("0.0.0.0:80", handlers.CombinedLoggingHandler(os.Stdout, mux)))
+	//log.Fatal(http.ListenAndServe("0.0.0.0:80", handlers.CombinedLoggingHandler(os.Stdout, mux)))
 }

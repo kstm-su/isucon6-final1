@@ -14,6 +14,8 @@ RUN glide install
 
 COPY ./ /go/src/github.com/catatsuy/isucon6-final/webapp/go/
 
+RUN go get github.com/gorilla/handlers
+
 RUN go build -o app .
 
 CMD ["/go/src/github.com/catatsuy/isucon6-final/webapp/go/app"]
