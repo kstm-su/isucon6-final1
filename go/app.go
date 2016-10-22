@@ -2,6 +2,7 @@ package main
 
 import (
 //	"github.com/gorilla/handlers"
+	"sync"
 
 	"database/sql"
 	"encoding/json"
@@ -22,6 +23,8 @@ import (
 
 var (
 	dbx *sqlx.DB
+	roomcache map[int64][]Stroke
+	roomcachelock sync.Mutex
 )
 
 type Token struct {
@@ -112,6 +115,17 @@ func getStrokePoints(strokeID int64) ([]Point, error) {
 }
 
 func getStrokes(roomID int64, greaterThanID int64) ([]Stroke, error) {
+	if greaterThanID == 0 {
+		roomcachelock.Lock()
+		if val, ok := roomcache[roomID]; ok {
+			roomcachelock.Unlock()
+			if len(val) != 0 {
+				return val, nil
+			}
+		} else {
+			roomcachelock.Unlock()
+		}
+	}
 	query := "SELECT `id`, `room_id`, `width`, `red`, `green`, `blue`, `alpha`, `created_at` FROM `strokes`"
 	query += " WHERE `room_id` = ? AND `id` > ? ORDER BY `id` ASC"
 	strokes := []Stroke{}
@@ -122,6 +136,11 @@ func getStrokes(roomID int64, greaterThanID int64) ([]Stroke, error) {
 	// 空スライスを入れてJSONでnullを返さないように
 	for i := range strokes {
 		strokes[i].Points = []Point{}
+	}
+	if greaterThanID == 0 {
+		roomcachelock.Lock()
+		roomcache[roomID] = strokes
+		roomcachelock.Unlock()
 	}
 	return strokes, nil
 }
@@ -540,6 +559,8 @@ func postAPIStrokesRoomsID(ctx context.Context, w http.ResponseWriter, r *http.R
 	tx := dbx.MustBegin()
 	query := "INSERT INTO `strokes` (`room_id`, `width`, `red`, `green`, `blue`, `alpha`)"
 	query += " VALUES(?, ?, ?, ?, ?, ?)"
+	roomcachelock.Lock()
+	roomcache[room.ID] = []Stroke{}
 
 	result := tx.MustExec(query,
 		room.ID,
@@ -549,6 +570,7 @@ func postAPIStrokesRoomsID(ctx context.Context, w http.ResponseWriter, r *http.R
 		postedStroke.Blue,
 		postedStroke.Alpha,
 	)
+	roomcachelock.Unlock()
 //	time.Sleep(1 * time.Millisecond)
 	strokeID, err := result.LastInsertId()
 	if err != nil {
@@ -593,6 +615,7 @@ func postAPIStrokesRoomsID(ctx context.Context, w http.ResponseWriter, r *http.R
 }
 
 func main() {
+	roomcache = map[int64][]Stroke{}
 	host := os.Getenv("MYSQL_HOST")
 	if host == "" {
 		host = "localhost"
