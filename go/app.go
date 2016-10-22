@@ -549,7 +549,7 @@ func postAPIStrokesRoomsID(ctx context.Context, w http.ResponseWriter, r *http.R
 		postedStroke.Blue,
 		postedStroke.Alpha,
 	)
-	time.Sleep(200 * time.Millisecond)
+//	time.Sleep(1 * time.Millisecond)
 	strokeID, err := result.LastInsertId()
 	if err != nil {
 		outputError(w, err)

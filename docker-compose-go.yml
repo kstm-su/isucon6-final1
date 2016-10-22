@@ -16,7 +16,7 @@ services:
       - mysql
     environment:
       ISUCON_ENV: production
-      MYSQL_HOST: mysql
+      MYSQL_HOST: "10.6.1.6"
       MYSQL_PORT: 3306
       MYSQL_USER: isucon
       MYSQL_PASS: isucon
