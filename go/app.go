@@ -139,7 +139,7 @@ func getRoom(roomID int64) (*Room, error) {
 }
 
 func getWatcherCount(roomID int64) (int, error) {
-	query := "SELECT COUNT(*) AS `watcher_count` FROM `room_watchers`"
+	query := "SELECT COUNT(1) AS `watcher_count` FROM `room_watchers`"
 	query += " WHERE `room_id` = ? AND `updated_at` > CURRENT_TIMESTAMP(6) - INTERVAL 3 SECOND"
 
 	var watcherCount int
@@ -524,7 +524,7 @@ func postAPIStrokesRoomsID(ctx context.Context, w http.ResponseWriter, r *http.R
 		return
 	}
 	if len(strokes) == 0 {
-		query := "SELECT COUNT(*) AS cnt FROM `room_owners` WHERE `room_id` = ? AND `token_id` = ?"
+		query := "SELECT COUNT(1) AS cnt FROM `room_owners` WHERE `room_id` = ? AND `token_id` = ?"
 		cnt := 0
 		err = dbx.QueryRow(query, room.ID, t.ID).Scan(&cnt)
 		if err != nil {
