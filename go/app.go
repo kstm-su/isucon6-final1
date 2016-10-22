@@ -1,6 +1,8 @@
 package main
 
 import (
+//	"github.com/gorilla/handlers"
+
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -633,4 +635,5 @@ func main() {
 	mux.HandleFuncC(pat.Post("/api/strokes/rooms/:id"), postAPIStrokesRoomsID)
 
 	log.Fatal(http.ListenAndServe("0.0.0.0:80", mux))
+//	log.Fatal(http.ListenAndServe("0.0.0.0:80", handlers.CombinedLoggingHandler(os.Stdout, mux)))
 }
