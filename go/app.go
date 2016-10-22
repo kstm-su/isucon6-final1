@@ -559,8 +559,8 @@ func postAPIStrokesRoomsID(ctx context.Context, w http.ResponseWriter, r *http.R
 	tx := dbx.MustBegin()
 	query := "INSERT INTO `strokes` (`room_id`, `width`, `red`, `green`, `blue`, `alpha`)"
 	query += " VALUES(?, ?, ?, ?, ?, ?)"
-	roomcachelock.Lock()
-	roomcache[room.ID] = []Stroke{}
+//	roomcachelock.Lock()
+//	roomcache[room.ID] = []Stroke{}
 
 	result := tx.MustExec(query,
 		room.ID,
@@ -570,13 +570,15 @@ func postAPIStrokesRoomsID(ctx context.Context, w http.ResponseWriter, r *http.R
 		postedStroke.Blue,
 		postedStroke.Alpha,
 	)
-	roomcachelock.Unlock()
 //	time.Sleep(1 * time.Millisecond)
 	strokeID, err := result.LastInsertId()
 	if err != nil {
 		outputError(w, err)
 		return
 	}
+	roomcachelock.Lock()
+	roomcache[room.ID] = append(roomcache[room.ID], Stroke{strokeID, room.ID, postedStroke.Width, postedStroke.Red, postedStroke.Green, postedStroke.Blue, postedStroke.Alpha, time.Now(), []Point{}})
+	roomcachelock.Unlock()
 
 	query = "INSERT INTO `points` (`stroke_id`, `x`, `y`) VALUES (?, ?, ?)"
 	for _, p := range postedStroke.Points {
