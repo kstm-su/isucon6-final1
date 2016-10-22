@@ -621,9 +621,14 @@ func main() {
 		dbname,
 	)
 
-	dbx, err = sqlx.Open("mysql", dsn)
-	if err != nil {
-		log.Fatalf("Failed to connect to DB: %s.", err.Error())
+	for {
+		dbx, err = sqlx.Open("mysql", dsn)
+		if err != nil {
+			log.Fatalf("Failed to connect to DB: %s.", err.Error())
+			time.Sleep(1 * time.Second)
+		} else {
+			break
+		}
 	}
 	defer dbx.Close()
 
